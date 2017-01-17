@@ -80,6 +80,7 @@ export
     ObjectIdDict,
     OrdinalRange,
     Pair,
+    ParallelAccumulator,
     PartialQuickSort,
     PollingFileWatcher,
     QuickSort,
@@ -1356,6 +1357,7 @@ export
     @threadcall,
 
     # multiprocessing
+    @accumulate,
     @spawn,
     @spawnat,
     @fetch,
