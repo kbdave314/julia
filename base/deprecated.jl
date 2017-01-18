@@ -1763,4 +1763,13 @@ end)
     return false
 end
 
+# limit use of LibGit2.get method (part of #19839)
+eval(Base.LibGit2, quote
+     @deprecate get{T<:GitObject}(::Type{T}, repo::GitRepo, x) T(repo, x)
+     @deprecate get{T<:GitObject}(::Type{T}, repo::GitRepo, oid::GitHash, oid_size::Int) T(repo, GitShortHash(oid, oid_size))
+     @deprecate revparse(repo::GitRepo, objname::AbstractString) GitObject(repo, objname)
+     @deprecate object(repo::GitRepo, te::GitTreeEntry) GitObject(repo, te)
+     @deprecate commit(ann::GitAnnotated) GitHash(ann)
+end)
+
 # End deprecations scheduled for 0.6
