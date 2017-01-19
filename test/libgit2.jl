@@ -324,17 +324,17 @@ mktempdir() do dir
                     @test LibGit2.name(brref) == "refs/heads/master"
                     @test LibGit2.shortname(brref) == master_branch
                     @test LibGit2.ishead(brref)
-                    @test LibGit2.upstream(brref) === nothing
+                    @test_throws LibGit2.GitError LibGit2.upstream(brref)
                     @test repo.ptr == LibGit2.owner(brref).ptr
                     @test brnch == master_branch
                     @test LibGit2.headname(repo) == master_branch
                     LibGit2.branch!(repo, test_branch, string(commit_oid1), set_head=false)
 
-                    @test LibGit2.lookup_branch(repo, test_branch, true) === nothing
+                    @test_throws LibGit2.GitError LibGit2.lookup_branch(repo, test_branch, true)
                     tbref = LibGit2.lookup_branch(repo, test_branch, false)
                     try
                         @test LibGit2.shortname(tbref) == test_branch
-                        @test LibGit2.upstream(tbref) === nothing
+                        @test_throws LibGit2.GitError LibGit2.upstream(tbref)
                     finally
                         close(tbref)
                     end

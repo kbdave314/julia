@@ -205,7 +205,14 @@ function branch!(repo::GitRepo, branch_name::AbstractString,
                  force::Bool=false,           # force branch creation
                  set_head::Bool=true)         # set as head reference on exit
     # try to lookup branch first
-    branch_ref = force ? nothing : lookup_branch(repo, branch_name)
+    branch_ref = nothing
+    try
+        branch_ref = lookup_branch(repo, branch_name)
+    catch err
+        if !isa(err, LibGit2.GitError) && err.code != LibGit2.ENOTFOUND
+            rethrow(err)
+        end
+    end
     if branch_ref === nothing
         branch_rmt_ref = isempty(track) ? nothing : lookup_branch(repo, "$track/$branch_name", true)
         # if commit is empty get head commit oid
