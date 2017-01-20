@@ -1763,4 +1763,7 @@ end)
     return false
 end
 
+# LibGit2.owner -> LibGit2.repository for consistency
+eval(Base.LibGit2, :(Base.@deprecate_binding owner repository))
+
 # End deprecations scheduled for 0.6
