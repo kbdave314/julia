@@ -91,6 +91,10 @@ imag{T<:Real}(x::AbstractArray{T}) = zero(x)
 
 # index A[:,:,...,i,:,:,...] where "i" is in dimension "d"
 
+_slice_inds(new_inds::Tuple, inds::Tuple, d, i) =
+    _slice_inds((new_inds..., length(new_inds) + 1 == d ? i : first(inds)), tail(inds), d, i)
+_slice_inds(new_inds::Tuple, inds::Tuple{}, d, i) = new_inds
+
 """
     slicedim(A, d::Integer, i)
 
@@ -113,7 +117,7 @@ function slicedim(A::AbstractArray, d::Integer, i)
     d >= 1 || throw(ArgumentError("dimension must be ≥ 1"))
     nd = ndims(A)
     d > nd && (i == 1 || throw_boundserror(A, (ntuple(k->Colon(),nd)..., ntuple(k->1,d-1-nd)..., i)))
-    A[( n==d ? i : indices(A,n) for n in 1:nd )...]
+    A[_slice_inds((), indices(A), d, i)...]
 end
 
 function flipdim(A::AbstractVector, d::Integer)
