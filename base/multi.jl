@@ -2283,3 +2283,28 @@ function getindex(r::RemoteChannel, args...)
     end
     return remotecall_fetch(getindex, r.where, r, args...)
 end
+
+"""
+    clear!(syms, pids=workers(); mod=Main)
+
+Clears global bindings in modules by initializing them to `nothing`.
+`syms` should be of type `Symbol` or a collection of `Symbol`s . `pids` and `mod`
+identify the processes and the module in which global variables
+are to be reinitialized. Non-existing bindings for requested names are silently
+ignored.
+
+An exception is raised if a global constant is requested to be cleared.
+"""
+function clear!(syms, pids=workers(); mod=Main)
+    @sync for p in pids
+        @async remotecall_wait(clear_impl!, p, syms, mod)
+    end
+end
+clear!(sym::Symbol, pid::Int=myid(); mod=Main) = clear!([sym], [pid]; mod=mod)
+clear!(syms::Vector{Symbol}, pid::Int=myid(); mod=Main) = clear!(sym, [pid]; mod=mod)
+clear!(sym::Symbol, pids::Vector{Int}; mod=Main) = clear!([sym], pids; mod=mod)
+
+
+
+clear_impl!(syms::Vector, mod::Module) = foreach(x->clear_impl!(x,mod), syms)
+clear_impl!(sym::Symbol, mod::Module) = isdefined(mod, sym) && eval(mod, :(global $sym = nothing))

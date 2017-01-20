@@ -1421,3 +1421,37 @@ if true
 end
 @test x == map(_->sin(2), 1:2)
 
+# Testing clear!
+foosym = rand()
+barsym = rand()
+bazsym = rand()
+
+@test foosym == remotecall_fetch(()->foosym, id_other)
+@test remotecall_fetch(isdefined, id_other, :foosym)
+clear!(:foosym, id_other)
+remote_foosym = remotecall_fetch(()->getfield(Main, :foosym), id_other)
+@test remote_foosym === nothing
+@test remote_foosym != foosym
+
+for p in workers()
+    @test barsym == remotecall_fetch(()->barsym, p)
+    @test bazsym == remotecall_fetch(()->bazsym, p)
+
+    @test remotecall_fetch(isdefined, p, :barsym)
+    @test remotecall_fetch(isdefined, p, :bazsym)
+end
+
+clear!([:barsym, :bazsym, :dontexistsym], workers())
+
+for p in workers()
+    remote_barsym = remotecall_fetch(()->getfield(Main, :barsym), p)
+    @test remote_barsym === nothing
+    @test remote_barsym != barsym
+
+    remote_bazsym = remotecall_fetch(()->getfield(Main, :bazsym), p)
+    @test remote_bazsym === nothing
+    @test remote_bazsym != bazsym
+
+    @test remotecall_fetch(isdefined, p, :barsym)
+    @test remotecall_fetch(isdefined, p, :bazsym)
+end
